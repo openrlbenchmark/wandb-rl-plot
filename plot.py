@@ -20,6 +20,8 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
+    env_id = "BreakoutNoFrameskip-v4"
+
     wandb.require("report-editing:v0")
     api = wandb.Api()
     report = api.create_report(project="cleanrl")
@@ -31,13 +33,23 @@ if __name__ == "__main__":
     run_set1.name = "CleanRL's ppo_atari.py"
     run_set1.entity = "openrlbenchmark"
     run_set1.project = "cleanrl"
-    run_set1.set_filters_with_python_expr('env_id == "BreakoutNoFrameskip-v4"')
+    run_set1.set_filters_with_python_expr(f'env_id == "{env_id}" and exp_name == "ppo_atari"')
+    run_set1.groupby = ["exp_name"]
     panel_grid.run_sets = [run_set1]
 
     p = wb.LinePlot(panel_grid)
+    p.title = env_id
+    p.title_x = "Steps"
+    p.title_y = "Episodic Return"
+    p.max_runs_to_show = 100
     p.x = "global_step"
     p.y = ["charts/episodic_return"]
-    panel_grid.panels = [p]
+
+    m = wb.MediaBrowser(panel_grid)
+    m.media_keys = "videos"
+    m.num_columns = 3
+
+    panel_grid.panels = [p, m]
 
     section2 = [panel_grid]
     report.blocks = section2
